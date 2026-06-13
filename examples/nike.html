@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Agency Mouse Intelligence Tracker -->
+<script>
+    (function(w,d,s,t) {
+        w._agencyToken = t;
+        var f=d.getElementsByTagName(s)[0], j=d.createElement(s);
+        j.async=true; j.src=window.location.origin + '/client/element-map.js';
+        f.parentNode.insertBefore(j,f);
+        var f2=d.getElementsByTagName(s)[0], j2=d.createElement(s);
+        j2.async=true; j2.src=window.location.origin + '/client/tracking.js';
+        f2.parentNode.insertBefore(j2,f2);
+    })(window,document,'script','YOUR_CUSTOM_AGENCY_TOKEN_123');
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nike – Just Do It</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', Helvetica, Arial, sans-serif;
+    background: #ffffff;
+    color: #111111;
+    font-size: 16px;
+  }
+
+  /* UTILITY BAR */
+  .utility-bar {
+    background: #f5f5f5;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .utility-bar-left { color: #111; font-weight: 700; font-size: 13px; }
+  .utility-bar-right { display: flex; gap: 16px; color: #111; }
+  .utility-bar-right span { cursor: pointer; }
+  .utility-bar-right span:hover { text-decoration: underline; }
+
+  /* PRIMARY NAV */
+  .primary-nav {
+    background: #ffffff;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    border-bottom: 1px solid #e5e5e5;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-logo svg { width: 56px; height: 20px; fill: #111; }
+  .nav-links { display: flex; gap: 20px; align-items: center; }
+  .nav-links a {
+    font-size: 14px;
+    font-weight: 500;
+    color: #111;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .nav-links a:hover { text-decoration: underline; }
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+  .search-pill {
+    background: #f5f5f5;
+    border: none;
+    border-radius: 24px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-family: 'Inter', Helvetica, Arial, sans-serif;
+    color: #111;
+    width: 180px;
+    cursor: text;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nav-icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #111;
+  }
+  .nav-icon-btn:hover { background: #f5f5f5; }
+
+  /* HERO SECTION */
+  .hero {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/7;
+    overflow: hidden;
+    background: #1a1a2e;
+    display: flex;
+    align-items: flex-end;
+  }
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #0d1b2a 0%, #1a3a5c 40%, #2d6a4f 100%);
+  }
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 60%, transparent 100%);
+  }
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 0 48px 48px;
+    max-width: 55%;
+  }
+  .hero-eyebrow {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .hero-headline {
+    font-family: 'Inter', 'Arial Black', Helvetica, Arial, sans-serif;
+    font-size: clamp(52px, 6.5vw, 96px);
+    font-weight: 900;
+    line-height: 0.9;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    margin-bottom: 24px;
+  }
+  .hero-sub {
+    font-size: 16px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 32px;
+    max-width: 380px;
+    line-height: 1.5;
+  }
+  .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  /* BUTTONS */
+  .btn-primary {
+    background: #111111;
+    color: #ffffff;
+    border: none;
+    border-radius: 30px;
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 500;
+    font-family: 'Inter', Helvetica, Arial, sans-serif;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.1s;
+    white-space: nowrap;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-primary:active { transform: scale(0.97); opacity: 0.7; }
+  .btn-outline-white {
+    background: #ffffff;
+    color: #111111;
+    border: none;
+    border-radius: 30px;
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 500;
+    font-family: 'Inter', Helvetica, Arial, sans-serif;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.1s;
+    white-space: nowrap;
+  }
+  .btn-outline-white:hover { opacity: 0.85; }
+  .btn-secondary {
+    background: #f5f5f5;
+    color: #111111;
+    border: none;
+    border-radius: 30px;
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 500;
+    font-family: 'Inter', Helvetica, Arial, sans-serif;
+    cursor: pointer;
+  }
+  .btn-secondary:hover { background: #e5e5e5; }
+
+  /* SECTIONS */
+  .section { padding: 48px 24px; }
+  .section-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 24px;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+  }
+
+  /* PRODUCT GRID */
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .product-card { background: #ffffff; cursor: pointer; }
+  .product-card:hover .product-img-wrap { opacity: 0.92; }
+  .product-img-wrap {
+    background: #f5f5f5;
+    aspect-ratio: 1/1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: opacity 0.2s;
+    position: relative;
+  }
+  .product-img-wrap svg { width: 75%; height: 75%; }
+  .badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: #ffffff;
+    border: 1px solid #cacacb;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 12px;
+    color: #111;
+  }
+  .product-meta { padding: 8px 0; }
+  .swatch-row { display: flex; gap: 4px; margin-bottom: 8px; }
+  .swatch { width: 12px; height: 12px; border-radius: 50%; border: 1px solid #e5e5e5; }
+  .swatch.active { outline: 2px solid #111; outline-offset: 2px; }
+  .product-name { font-size: 16px; font-weight: 500; color: #111; line-height: 1.3; }
+  .product-sub { font-size: 14px; font-weight: 500; color: #707072; margin-top: 2px; }
+  .product-price { font-size: 16px; font-weight: 500; color: #111; margin-top: 4px; }
+  .price-sale { color: #d30005; }
+  .price-original { color: #707072; text-decoration: line-through; margin-left: 8px; font-size: 14px; }
+  .price-off { color: #d30005; font-size: 14px; margin-left: 4px; }
+
+  /* SPORT RAIL */
+  .sport-rail {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+  .sport-rail::-webkit-scrollbar { display: none; }
+  .sport-tile {
+    flex: 0 0 220px;
+    aspect-ratio: 4/5;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    background: #111;
+  }
+  .sport-tile-bg {
+    position: absolute;
+    inset: 0;
+    transition: transform 0.3s;
+  }
+  .sport-tile:hover .sport-tile-bg { transform: scale(1.04); }
+  .sport-tile-label {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    font-size: 20px;
+    font-weight: 900;
+    color: #fff;
+    text-transform: uppercase;
+    line-height: 1;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  }
+  .sport-tile-cta {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    background: #ffffff;
+    color: #111;
+    border: none;
+    border-radius: 30px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  /* CLOTHING STRIP */
+  .clothing-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .clothing-card {
+    background: #f5f5f5;
+    aspect-ratio: 3/4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .clothing-card:hover { opacity: 0.92; }
+  .clothing-label {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+    text-transform: uppercase;
+  }
+
+  /* CAMPAIGN BANNER */
+  .campaign-banner {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/6;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+  }
+  .campaign-bg { position: absolute; inset: 0; }
+  .campaign-content {
+    position: relative;
+    z-index: 2;
+    padding: 0 48px 40px;
+  }
+  .campaign-headline {
+    font-family: 'Inter', 'Arial Black', Helvetica, Arial, sans-serif;
+    font-size: clamp(36px, 4.5vw, 72px);
+    font-weight: 900;
+    line-height: 0.9;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  /* MEMBERSHIP SECTION */
+  .member-section {
+    background: #111;
+    color: #fff;
+    padding: 64px 24px;
+    text-align: center;
+  }
+  .member-section .section-title { color: #fff; }
+  .member-benefits {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 32px;
+  }
+  .member-card {
+    aspect-ratio: 4/3;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .member-card-title { font-size: 18px; font-weight: 700; color: #fff; }
+  .member-card-sub { font-size: 14px; color: rgba(255,255,255,0.6); margin-top: 4px; }
+  .member-cta { margin-top: 32px; display: flex; gap: 12px; justify-content: center; }
+
+  /* FOOTER */
+  footer {
+    background: #ffffff;
+    border-top: 1px solid #cacacb;
+    padding: 48px 24px 24px;
+  }
+  .footer-cols {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+    margin-bottom: 32px;
+  }
+  .footer-col-title { font-size: 16px; font-weight: 500; color: #111; margin-bottom: 12px; }
+  .footer-col a {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #707072;
+    text-decoration: none;
+    margin-bottom: 8px;
+  }
+  .footer-col a:hover { color: #111; }
+  .footer-bottom {
+    border-top: 1px solid #cacacb;
+    padding-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .footer-fine { font-size: 9px; font-weight: 500; color: #707072; }
+  .footer-locale { font-size: 12px; font-weight: 500; color: #707072; display: flex; gap: 16px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 1023px) {
+    .product-grid { grid-template-columns: repeat(2, 1fr); }
+    .clothing-strip { grid-template-columns: repeat(2, 1fr); }
+    .member-benefits { grid-template-columns: repeat(2, 1fr); }
+    .footer-cols { grid-template-columns: repeat(2, 1fr); }
+    .nav-links { display: none; }
+  }
+  @media (max-width: 599px) {
+    .product-grid { grid-template-columns: 1fr; }
+    .hero-headline { font-size: 48px; }
+    .campaign-headline { font-size: 36px; }
+    .member-benefits { grid-template-columns: 1fr; }
+    .footer-cols { grid-template-columns: 1fr; }
+    .hero-content { max-width: 100%; padding: 0 24px 32px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- UTILITY BAR -->
+<div class="utility-bar">
+  <div class="utility-bar-left">
+    <svg viewBox="0 0 120 42" style="width:48px;height:17px;fill:#111" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 30.6L0 3.6h6l9 21L93 0c6-1.8 10.8 1.8 7.8 7.2L12 30.6z"/>
+    </svg>
+  </div>
+  <div class="utility-bar-right">
+    <span>Find a Store</span>
+    <span>Help</span>
+    <span>Join Us</span>
+    <span>Sign In</span>
+  </div>
+</div>
+
+<!-- PRIMARY NAV -->
+<nav class="primary-nav">
+  <div class="nav-logo">
+    <svg viewBox="0 0 120 42" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 30.6L0 3.6h6l9 21L93 0c6-1.8 10.8 1.8 7.8 7.2L12 30.6z"/>
+    </svg>
+  </div>
+  <div class="nav-links">
+    <a href="#">New &amp; Featured</a>
+    <a href="#">Men</a>
+    <a href="#">Women</a>
+    <a href="#">Kids</a>
+    <a href="#">Jordan</a>
+    <a href="#">Sale</a>
+    <a href="#">SNKRS</a>
+  </div>
+  <div class="nav-right">
+    <div class="search-pill">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#707072" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span style="color:#707072;font-size:14px;">Search</span>
+    </div>
+    <button class="nav-icon-btn" aria-label="Favorites">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    </button>
+    <button class="nav-icon-btn" aria-label="Bag">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <svg style="position:absolute;right:0;bottom:0;width:55%;height:100%;opacity:0.12" viewBox="0 0 600 500" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="400" cy="300" r="280" fill="none" stroke="#fff" stroke-width="1"/>
+    <circle cx="400" cy="300" r="220" fill="none" stroke="#fff" stroke-width="0.5"/>
+    <circle cx="400" cy="300" r="160" fill="none" stroke="#fff" stroke-width="0.5"/>
+  </svg>
+  <svg style="position:absolute;right:5%;bottom:0;width:42%;height:90%;opacity:0.9" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="shoeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#ff6b35;stop-opacity:1"/>
+        <stop offset="100%" style="stop-color:#ff3a00;stop-opacity:1"/>
+      </linearGradient>
+    </defs>
+    <ellipse cx="280" cy="420" rx="200" ry="28" fill="#111" opacity="0.9"/>
+    <path d="M95 400 Q100 380 180 375 L420 370 Q460 370 470 390 L460 410 Q440 425 280 428 Q160 430 110 418 Z" fill="#f0f0f0"/>
+    <path d="M160 375 Q165 300 200 260 Q240 220 300 210 Q370 205 420 230 Q460 250 455 290 Q450 340 430 370 Z" fill="url(#shoeGrad)"/>
+    <path d="M120 380 Q130 340 160 310 Q185 290 200 280 L205 310 Q185 330 175 370 Z" fill="#e55a28"/>
+    <path d="M200 270 L300 255 L305 290 L200 305 Z" fill="rgba(255,255,255,0.25)"/>
+    <line x1="210" y1="272" x2="295" y2="258" stroke="white" stroke-width="2" opacity="0.6"/>
+    <line x1="208" y1="280" x2="293" y2="267" stroke="white" stroke-width="2" opacity="0.6"/>
+    <line x1="206" y1="289" x2="291" y2="276" stroke="white" stroke-width="2" opacity="0.6"/>
+    <line x1="204" y1="298" x2="289" y2="285" stroke="white" stroke-width="2" opacity="0.6"/>
+    <path d="M390 250 Q450 255 455 290 L430 370 L390 360 Z" fill="#cc4a1a"/>
+    <path d="M180 330 Q240 295 340 305 Q380 308 410 285 Q370 345 180 330Z" fill="white" opacity="0.92"/>
+  </svg>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">New Release</div>
+    <div class="hero-headline">Just<br>Do It</div>
+    <div class="hero-sub">The latest running technology, engineered for speed. Feel the difference with every stride.</div>
+    <div class="hero-ctas">
+      <button class="btn-outline-white">Shop Men's</button>
+      <button class="btn-outline-white" style="background:rgba(255,255,255,0.15);color:#fff;border:none;">Shop Women's</button>
+    </div>
+  </div>
+</section>
+
+<!-- TRENDING NOW -->
+<section class="section">
+  <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:24px">
+    <div class="section-title" style="margin-bottom:0">Trending Now</div>
+    <a href="#" style="font-size:14px;font-weight:500;color:#111;text-decoration:underline">Shop All</a>
+  </div>
+  <div class="product-grid">
+
+    <div class="product-card">
+      <div class="product-img-wrap">
+        <div class="badge">Just In</div>
+        <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+          <defs><linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#111"/><stop offset="100%" style="stop-color:#333"/></linearGradient></defs>
+          <ellipse cx="150" cy="230" rx="110" ry="18" fill="#ddd"/>
+          <path d="M55 220 Q58 198 80 180 Q105 162 140 158 Q185 155 215 168 Q240 180 242 200 Q243 218 232 225 Q200 235 150 238 Q90 240 68 228 Z" fill="#f0f0f0"/>
+          <path d="M80 215 Q85 175 110 155 Q135 137 165 133 Q200 130 225 148 Q248 165 245 195 Q242 215 232 225 Z" fill="url(#g1)"/>
+          <path d="M58 220 Q65 185 80 170 Q92 158 100 152 L104 175 Q96 188 88 215 Z" fill="#222"/>
+          <path d="M110 148 L185 138 L188 162 L110 172 Z" fill="rgba(255,255,255,0.15)"/>
+          <line x1="118" y1="150" x2="180" y2="141" stroke="white" stroke-width="1.5" opacity="0.5"/>
+          <line x1="116" y1="158" x2="178" y2="149" stroke="white" stroke-width="1.5" opacity="0.5"/>
+          <line x1="114" y1="166" x2="176" y2="157" stroke="white" stroke-width="1.5" opacity="0.5"/>
+          <path d="M100 190 Q130 172 200 180 Q225 183 240 168 Q215 208 100 190Z" fill="white" opacity="0.9"/>
+        </svg>
+      </div>
+      <div class="product-meta">
+        <div class="swatch-row">
+          <div class="swatch active" style="background:#111"></div>
+          <div class="swatch" style="background:#fff;border:1px solid #ccc"></div>
+          <div class="swatch" style="background:#d30005"></div>
+          <div class="swatch" style="background:#1a3a6c"></div>
+        </div>
+        <div class="product-name">Nike Air Max 270</div>
+        <div class="product-sub">Men's Shoes</div>
+        <div class="product-price">$150</div>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img-wrap">
+        <div class="badge">Member Exclusive</div>
+        <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+          <defs><linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#1a3a6c"/><stop offset="100%" style="stop-color:#3a6cbf"/></linearGradient></defs>
+          <ellipse cx="150" cy="230" rx="110" ry="18" fill="#ddd"/>
+          <path d="M55 220 Q58 198 80 180 Q105 162 140 158 Q185 155 215 168 Q240 180 242 200 Q243 218 232 225 Q200 235 150 238 Q90 240 68 228 Z" fill="#e8e8e8"/>
+          <path d="M80 215 Q85 175 110 155 Q135 137 165 133 Q200 130 225 148 Q248 165 245 195 Q242 215 232 225 Z" fill="url(#g2)"/>
+          <path d="M58 220 Q65 185 80 170 Q92 158 100 152 L104 175 Q96 188 88 215 Z" fill="#122850"/>
+          <path d="M110 148 L185 138 L188 162 L110 172 Z" fill="rgba(255,255,255,0.2)"/>
+          <line x1="118" y1="150" x2="180" y2="141" stroke="white" stroke-width="1.5" opacity="0.6"/>
+          <line x1="116" y1="158" x2="178" y2="149" stroke="white" stroke-width="1.5" opacity="0.6"/>
+          <line x1="114" y1="166" x2="176" y2="157" stroke="white" stroke-width="1.5" opacity="0.6"/>
+          <path d="M100 190 Q130 172 200 180 Q225 183 240 168 Q215 208 100 190Z" fill="white" opacity="0.92"/>
+        </svg>
+      </div>
+      <div class="product-meta">
+        <div class="swatch-row">
+          <div class="swatch active" style="background:#1a3a6c"></div>
+          <div class="swatch" style="background:#888"></div>
+          <div class="swatch" style="background:#2d6a4f"></div>
+        </div>
+        <div class="product-name">Nike Pegasus 41</div>
+        <div class="product-sub">Men's Road Running Shoes</div>
+        <div class="product-price">
+          <span class="price-sale">$95.97</span>
+          <span class="price-original">$130</span>
+          <span class="price-off">26% off</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img-wrap">
+        <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+          <defs><linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#c8f0c0"/><stop offset="100%" style="stop-color:#8ed47e"/></linearGradient></defs>
+          <ellipse cx="150" cy="230" rx="110" ry="18" fill="#ddd"/>
+          <path d="M55 220 Q58 198 80 180 Q105 162 140 158 Q185 155 215 168 Q240 180 242 200 Q243 218 232 225 Q200 235 150 238 Q90 240 68 228 Z" fill="#f0f0f0"/>
+          <path d="M80 215 Q85 175 110 155 Q135 137 165 133 Q200 130 225 148 Q248 165 245 195 Q242 215 232 225 Z" fill="url(#g3)"/>
+          <path d="M58 220 Q65 185 80 170 Q92 158 100 152 L104 175 Q96 188 88 215 Z" fill="#6ab558"/>
+          <path d="M110 148 L185 138 L188 162 L110 172 Z" fill="rgba(255,255,255,0.3)"/>
+          <line x1="118" y1="150" x2="180" y2="141" stroke="white" stroke-width="2" opacity="0.7"/>
+          <line x1="116" y1="158" x2="178" y2="149" stroke="white" stroke-width="2" opacity="0.7"/>
+          <line x1="114" y1="166" x2="176" y2="157" stroke="white" stroke-width="2" opacity="0.7"/>
+          <path d="M100 190 Q130 172 200 180 Q225 183 240 168 Q215 208 100 190Z" fill="white" opacity="0.92"/>
+        </svg>
+      </div>
+      <div class="product-meta">
+        <div class="swatch-row">
+          <div class="swatch active" style="background:#8ed47e"></div>
+          <div class="swatch" style="background:#ff6b35"></div>
+          <div class="swatch" style="background:#fff;border:1px solid #ccc"></div>
+          <div class="swatch" style="background:#111"></div>
+        </div>
+        <div class="product-name">Nike Invincible 3</div>
+        <div class="product-sub">Women's Road Running Shoes</div>
+        <div class="product-price">$180</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ACG CAMPAIGN BANNER -->
+<div class="campaign-banner">
+  <div class="campaign-bg" style="background: linear-gradient(135deg, #0a2510 0%, #0a4020 35%, #1a6a35 70%, #2d8c50 100%);">
+    <svg style="position:absolute;right:0;bottom:0;width:60%;height:100%;opacity:0.3" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+      <path d="M400 400 Q350 200 500 100 Q600 50 600 0 L600 400Z" fill="#fff"/>
+    </svg>
+    <svg style="position:absolute;bottom:0;right:10%;width:50%;height:85%;opacity:0.85" viewBox="0 0 500 450" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="250,40 80,380 420,380" fill="#1a5c2a" opacity="0.9"/>
+      <polygon points="250,40 170,200 330,200" fill="#e8f4ea" opacity="0.95"/>
+      <polygon points="340,120 200,380 480,380" fill="#2d7a3a" opacity="0.7"/>
+      <polygon points="340,120 280,230 400,230" fill="#d0e8d4" opacity="0.8"/>
+    </svg>
+  </div>
+  <div class="campaign-content">
+    <div class="campaign-headline" style="color:#ffffff">ACG<br>Trail<br>Ready</div>
+    <button class="btn-outline-white">Shop ACG</button>
+  </div>
+</div>
+
+<!-- SHOP BY SPORT -->
+<section class="section">
+  <div class="section-title">Shop by Sport</div>
+  <div class="sport-rail">
+
+    <div class="sport-tile">
+      <div class="sport-tile-bg" style="background:linear-gradient(160deg,#1a1a2e,#16213e,#0f3460)"></div>
+      <div class="sport-tile-label">Run</div>
+      <button class="sport-tile-cta">Shop</button>
+    </div>
+
+    <div class="sport-tile">
+      <div class="sport-tile-bg" style="background:linear-gradient(160deg,#2d1a0e,#5a3010,#8b4513)"></div>
+      <div class="sport-tile-label">Basketball</div>
+      <button class="sport-tile-cta">Shop</button>
+    </div>
+
+    <div class="sport-tile">
+      <div class="sport-tile-bg" style="background:linear-gradient(160deg,#0a2510,#0a5020,#1a8035)"></div>
+      <div class="sport-tile-label">Football</div>
+      <button class="sport-tile-cta">Shop</button>
+    </div>
+
+    <div class="sport-tile">
+      <div class="sport-tile-bg" style="background:linear-gradient(160deg,#1a0a2e,#3a1050,#6a2090)"></div>
+      <div class="sport-tile-label">Training</div>
+      <button class="sport-tile-cta">Shop</button>
+    </div>
+
+    <div class="sport-tile">
+      <div class="sport-tile-bg" style="background:linear-gradient(160deg,#1a1000,#3a2800,#6a4800)"></div>
+      <div class="sport-tile-label">Golf</div>
+      <button class="sport-tile-cta">Shop</button>
+    </div>
+
+  </div>
+</section>
+
+<!-- LATEST IN CLOTHING -->
+<section class="section" style="padding-top:0">
+  <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:24px">
+    <div class="section-title" style="margin-bottom:0">Latest in Clothing</div>
+    <a href="#" style="font-size:14px;font-weight:500;color:#111;text-decoration:underline">Shop All</a>
+  </div>
+  <div class="clothing-strip">
+    <div class="clothing-card">
+      <svg viewBox="0 0 200 280" style="width:80%;height:80%" xmlns="http://www.w3.org/2000/svg">
+        <path d="M60 40 L80 30 L100 38 L120 30 L140 40 L155 100 L130 95 L130 240 L70 240 L70 95 L45 100 Z" fill="#111"/>
+        <path d="M80 30 L100 38 L120 30 L125 50 L100 55 L75 50Z" fill="#333"/>
+      </svg>
+      <div class="clothing-label">Jackets</div>
+    </div>
+    <div class="clothing-card">
+      <svg viewBox="0 0 200 280" style="width:80%;height:80%" xmlns="http://www.w3.org/2000/svg">
+        <path d="M55 30 L80 20 L100 28 L120 20 L145 30 L160 80 L130 75 L130 240 L70 240 L70 75 L40 80 Z" fill="#1a3a6c"/>
+        <path d="M80 20 L100 28 L120 20 L118 48 L100 52 L82 48Z" fill="#2a5090"/>
+        <path d="M88 30 Q100 35 112 30 Q110 45 100 48 Q90 45 88 30Z" fill="#1a3a6c"/>
+      </svg>
+      <div class="clothing-label">Hoodies</div>
+    </div>
+    <div class="clothing-card">
+      <svg viewBox="0 0 200 280" style="width:80%;height:80%" xmlns="http://www.w3.org/2000/svg">
+        <path d="M70 30 L130 30 L145 80 L130 80 L130 240 L70 240 L70 80 L55 80 Z" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1"/>
+        <path d="M80 30 Q100 22 120 30 L118 45 L100 50 L82 45Z" fill="#e8e8e8"/>
+        <text x="100" y="200" text-anchor="middle" font-family="Arial" font-size="11" font-weight="700" fill="#111">NIKE</text>
+      </svg>
+      <div class="clothing-label">T-Shirts</div>
+    </div>
+    <div class="clothing-card">
+      <svg viewBox="0 0 200 280" style="width:80%;height:80%" xmlns="http://www.w3.org/2000/svg">
+        <path d="M65 50 Q80 25 100 20 Q120 25 135 50 L140 280 L60 280 Z" fill="#111"/>
+        <path d="M75 50 L65 50 L60 100 L80 98 Z" fill="#222"/>
+        <path d="M125 50 L135 50 L140 100 L120 98 Z" fill="#222"/>
+        <path d="M80 45 Q100 35 120 45 L115 55 L100 60 L85 55Z" fill="#ff6b35"/>
+      </svg>
+      <div class="clothing-label">Shorts</div>
+    </div>
+  </div>
+</section>
+
+<!-- MEMBERSHIP -->
+<section class="member-section">
+  <div class="section-title">Become a Nike Member</div>
+  <p style="color:rgba(255,255,255,0.7);font-size:16px;max-width:480px;margin:0 auto;line-height:1.6">Get free shipping and returns, member discounts, and exclusive access to the latest products.</p>
+  <div class="member-benefits">
+    <div class="member-card" style="background:linear-gradient(135deg,#1a1a3a,#2a2a5a)">
+      <div style="font-size:32px;margin-bottom:8px">🚚</div>
+      <div class="member-card-title">Free Shipping</div>
+      <div class="member-card-sub">On every order, every time</div>
+    </div>
+    <div class="member-card" style="background:linear-gradient(135deg,#0a2510,#1a5a28)">
+      <div style="font-size:32px;margin-bottom:8px">🎁</div>
+      <div class="member-card-title">Member Discounts</div>
+      <div class="member-card-sub">Exclusive savings just for you</div>
+    </div>
+    <div class="member-card" style="background:linear-gradient(135deg,#2a0a10,#5a1a2a)">
+      <div style="font-size:32px;margin-bottom:8px">⚡</div>
+      <div class="member-card-title">Early Access</div>
+      <div class="member-card-sub">Be first to the latest drops</div>
+    </div>
+  </div>
+  <div class="member-cta">
+    <button class="btn-outline-white">Join Us</button>
+    <button class="btn-secondary" style="background:rgba(255,255,255,0.12);color:#fff">Learn More</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-cols">
+    <div class="footer-col">
+      <div class="footer-col-title">Resources</div>
+      <a href="#">Find a Store</a>
+      <a href="#">Become a Member</a>
+      <a href="#">Nike Journal</a>
+      <a href="#">Site Feedback</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Help</div>
+      <a href="#">Get Help</a>
+      <a href="#">Order Status</a>
+      <a href="#">Shipping &amp; Delivery</a>
+      <a href="#">Returns</a>
+      <a href="#">Contact Us</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Company</div>
+      <a href="#">About Nike</a>
+      <a href="#">News</a>
+      <a href="#">Careers</a>
+      <a href="#">Investors</a>
+      <a href="#">Sustainability</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Promotions &amp; Discounts</div>
+      <a href="#">Student</a>
+      <a href="#">Military</a>
+      <a href="#">Teacher</a>
+      <a href="#">First Responders &amp; Medical</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-fine">© 2025 Nike, Inc. All Rights Reserved</div>
+    <div class="footer-locale">
+      <span>🇧🇩 Bangladesh</span>
+      <span>Terms of Sale</span>
+      <span>Terms of Use</span>
+      <span>Privacy</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

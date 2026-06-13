@@ -1,0 +1,180 @@
+sequenceDiagram
+    autonumber
+
+    actor V as Visitor
+    participant BO as Behavioral Observer<br/>(Layer 1 · JS)
+    participant PB as Profile Builder<br/>(Layer 2 · Logic)
+    participant TM as Trigger Manager<br/>(Layer 3 · Logic)
+    participant QF as Question Flow<br/>(Layer 3 · Logic)
+    participant CB as Content Blocks<br/>(Layer 3 · Pre-written)
+    participant OL as Objection Library<br/>(Layer 3 · Pre-written)
+    participant AI as Claude API<br/>(AI Calls)
+    participant CE as Conversion Engine<br/>(Layer 4)
+    participant CA as Cal.com / Calendly<br/>(Booking)
+    participant AN as Analytics<br/>(Layer 5)
+
+    %% ── Page Load ──
+    rect rgb(30, 20, 20)
+        Note over V, AN: PHASE 1 — Silent Observation (Zero AI)
+        V->>BO: Lands on page
+        activate BO
+        BO->>AN: log(page_load)
+        BO->>PB: Boot empty session profile
+        activate PB
+        PB-->>BO: profile_ready
+
+        loop Every 5 seconds
+            BO->>BO: Collect mouse / scroll / click / time signals
+            BO->>PB: emit(signals)
+            PB->>PB: Recalculate intent_score, confidence, budget_sensitivity
+        end
+    end
+
+    %% ── Trigger ──
+    rect rgb(20, 25, 20)
+        Note over V, AN: PHASE 2 — Widget Trigger (Logic Only)
+        PB->>TM: intent_score ≥ 60
+        activate TM
+        TM->>TM: Check trigger rules<br/>(not page load, user action occurred)
+        TM->>AN: log(widget_triggered, profile_snapshot)
+        TM->>V: Show widget — Q1
+        deactivate TM
+    end
+
+    %% ── Question Flow ──
+    rect rgb(20, 20, 35)
+        Note over V, AN: PHASE 3 — Discovery (Logic + Optional AI #1)
+        V->>QF: Clicks answer — Q1 (business type)
+        activate QF
+        QF->>PB: update(business_type)
+        QF->>AN: log(q1_answered)
+        QF->>V: Show Q2 (primary problem)
+
+        V->>QF: Clicks answer — Q2 (problem)
+        QF->>PB: update(primary_problem)
+        QF->>AN: log(q2_answered)
+        QF->>V: Show Q3 (team size)
+
+        V->>QF: Clicks answer — Q3 (team size)
+        QF->>PB: update(team_size)
+        QF->>AN: log(q3_answered)
+        deactivate QF
+
+        alt Visitor types free text instead of clicking
+            V->>AI: Free text input
+            Note right of AI: AI Call #1 — Intent Parser<br/>Input: text + session profile<br/>Output: structured intent JSON
+            AI-->>QF: { business_type, problem, intent_category }
+            QF->>PB: update(parsed_intent)
+            AN->>AN: log(ai_call_1_used)
+        end
+    end
+
+    %% ── Content Delivery ──
+    rect rgb(25, 20, 35)
+        Note over V, AN: PHASE 4 — Personalized Content (Pre-written Logic)
+        QF->>PB: get(full_profile)
+        PB-->>QF: session_profile
+        QF->>CB: select_blocks(profile)
+        activate CB
+        CB-->>V: Benefit statement (business-specific)
+        CB-->>V: Timeline block
+        CB-->>V: Pricing context block
+        deactivate CB
+        AN->>AN: log(content_blocks_rendered)
+    end
+
+    %% ── Objection Handling ──
+    rect rgb(35, 20, 20)
+        Note over V, AN: PHASE 5 — Objection Handling (Library → AI fallback)
+
+        alt Visitor raises an objection
+            V->>OL: Objection signal detected
+            activate OL
+            OL->>OL: Match against pre-written library
+
+            alt Known objection — match found
+                OL-->>V: Pre-written response block
+                AN->>AN: log(objection_handled_prewritten)
+            else Unknown objection — no match
+                OL->>AI: objection_text + session_profile
+                Note right of AI: AI Call #2 — Objection Handler<br/>Input: objection + profile<br/>Output: 2–3 sentence reply
+                AI-->>V: Confident personalized reply
+                AN->>AN: log(ai_call_2_used)
+            end
+            deactivate OL
+        end
+    end
+
+    %% ── Conversion ──
+    rect rgb(20, 30, 25)
+        Note over V, AN: PHASE 6 — Conversion (AI Call #3 — Always Fires)
+        QF->>CE: flow_complete — trigger conversion step
+        activate CE
+        CE->>PB: get(full_profile)
+        PB-->>CE: session_profile
+
+        CE->>AI: session_profile
+        Note right of AI: AI Call #3 — Pitch Generator<br/>Input: full session profile<br/>Output: personalized pitch<br/>+ future outcome simulation
+        AI-->>CE: Personalized pitch (3–4 sentences)
+        AN->>AN: log(ai_call_3_used)
+
+        CE->>CB: select(risk_removal_block, confidence_level)
+        CB-->>CE: Risk block (no-commitment framing)
+        CE-->>V: Pitch + risk removal + CTA button
+        deactivate CE
+    end
+
+    %% ── CTA / Booking ──
+    rect rgb(20, 25, 35)
+        Note over V, AN: PHASE 7 — CTA & Booking
+        V->>CA: Clicks "Book a Call"
+        activate CA
+        CA-->>V: Calendly embed opens (pre-filled)
+        V->>CA: Selects time slot + confirms
+        CA-->>V: Booking confirmed
+        deactivate CA
+        CA->>AN: log(conversion_complete, session_profile)
+    end
+
+    %% ── Edge Cases ──
+    rect rgb(30, 25, 10)
+        Note over V, AN: EDGE CASES — Handled at Any Phase
+
+        alt Exit intent detected mid-flow
+            BO->>TM: exit_intent_signal
+            TM->>V: "Before you go..." card (once only)
+            V->>CA: Clicks WhatsApp fallback CTA
+            AN->>AN: log(exit_recovery_triggered)
+        end
+
+        alt AI call times out (> 4 seconds)
+            AI--xCE: timeout
+            CE->>CB: select(best_prewritten_fallback)
+            CB-->>V: Fallback content — no error shown
+            AN->>AN: log(ai_timeout_fallback)
+        end
+
+        alt Visitor clicks "Not what I want"
+            V->>QF: Reset signal
+            QF->>PB: partial_reset (keep behavior signals)
+            QF->>V: Show 3 restart options
+            AN->>AN: log(flow_reset)
+        end
+
+        alt All 3 AI calls exhausted
+            Note over AI, CE: AI budget = 0<br/>Remaining flow is 100% pre-written logic
+            CE->>CB: select(best_pitch_by_business_type)
+            CB-->>V: Pre-written pitch — visitor unaware
+        end
+    end
+
+    %% ── Session End ──
+    rect rgb(15, 15, 15)
+        Note over V, AN: SESSION END
+        V->>BO: Closes tab
+        deactivate BO
+        BO->>PB: session_end
+        PB->>PB: Clear sessionStorage
+        deactivate PB
+        Note over PB: All profile data destroyed.<br/>No persistence. GDPR safe.
+    end
