@@ -1,0 +1,48 @@
+{
+  "ema_half_life_seconds": 7,
+  "tick_interval_seconds": 1,
+  "trigger_threshold": 0.4,
+  "trigger_sustain_seconds": 2.0,
+  "fitts_min_pairs": 4,
+  "fitts_corr_scale": 0.15,
+  "humanness_min_valid": 0.15,
+
+  "desktop": {
+    "curve_gap_ms": 500,
+    "curve_max_duration_ms": 3000,
+    "curve_min_path_length_px": 3,
+    "curve_min_points_for_jerk": 5,
+    "humanness_min_curves_for_variance": 3,
+    "humanness_weights": { "tier0": 1.0, "tier1": 1.0, "fitts": 1.0 },
+    "k_values": { "E": 0.01, "R": 0.5, "jerk": 50 },
+    "signals": {
+      "hover_dwell_ms": 3000,
+      "scroll_reversal_threshold_px": 50,
+      "scroll_history_min_length": 3,
+      "E_mean_high_threshold": 0.7,
+      "time_on_page_ms": 60000
+    }
+  },
+
+  "mobile": {
+    "tap_max_duration_ms": 150,
+    "tap_max_displacement_px": 10,
+    "long_press_min_duration_ms": 500,
+    "pinch_min_distance_change_px": 20,
+    "touch_min_path_for_efficiency_px": 2,
+    "humanness_min_path_efficiency_n": 5,
+    "humanness_min_pressure_n": 5,
+    "humanness_min_radius_n": 5,
+    "humanness_min_decay_rate_n": 3,
+    "humanness_weights": { "tier0": 1.0, "tier1": 1.0, "tier2": 0.5 },
+    "k_values": { "path_efficiency": 0.05, "pressure": 0.02, "radius": 2.0, "decay": 0.001 },
+    "fling_min_samples": 5,
+    "fling_min_r_squared": 0.5,
+    "signals": {
+      "pricing_section_dwell_ms": 3000,
+      "scroll_reversal_threshold_px": 50,
+      "scroll_history_min_length": 3,
+      "time_on_page_ms": 60000
+    }
+  }
+}

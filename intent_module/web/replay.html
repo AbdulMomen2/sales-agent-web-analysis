@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session Replay — Intent Engine</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{background:#0d1117;color:#c9d1d9;font:13px -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;display:flex;flex-direction:column}
+#status{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0d1117;z-index:100;flex-direction:column;gap:12px}
+#status .spinner{width:32px;height:32px;border:3px solid #21262d;border-top-color:#58a6ff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#status .msg{color:#8b949e;font-size:13px}
+#header{display:flex;align-items:center;gap:8px;padding:6px 12px;background:#161b22;border-bottom:1px solid #21262d;font-size:12px;flex-shrink:0;min-height:36px}
+#header .title{color:#e6edf3;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#header .meta{color:#8b949e;margin-left:auto;font-family:monospace;font-size:11px}
+#header .close{padding:2px 8px;border:1px solid #30363d;border-radius:4px;background:transparent;color:#8b949e;cursor:pointer;font-size:13px;line-height:1}
+#header .close:hover{background:#21262d;color:#e6edf3}
+#main{flex:1;display:flex;overflow:hidden;min-height:0}
+#viewport{flex:1;position:relative;overflow:hidden;background:#fff}
+#viewport iframe{width:100%;height:100%;border:0;display:block}
+#viewctrl{position:absolute;top:8px;right:8px;z-index:10;display:flex;gap:4px}
+#viewctrl button{padding:4px 8px;border:1px solid rgba(255,255,255,.2);border-radius:4px;background:rgba(0,0,0,.55);color:#fff;cursor:pointer;font-size:11px;backdrop-filter:blur(4px)}
+#viewctrl button:hover{background:rgba(0,0,0,.75)}
+#viewctrl button.on{background:rgba(31,111,235,.7);border-color:#1f6feb}
+#sidebar{width:340px;background:#161b22;border-left:1px solid #21262d;display:flex;flex-direction:column;font-size:11px;flex-shrink:0}
+#toolbar{padding:6px 8px;background:#0d1117;border-bottom:1px solid #21262d;display:flex;gap:4px;align-items:center;flex-wrap:wrap;flex-shrink:0}
+#toolbar button{padding:4px 10px;border:1px solid #30363d;border-radius:4px;background:#21262d;color:#c9d1d9;cursor:pointer;font-size:11px;line-height:1.3;display:flex;align-items:center;gap:4px}
+#toolbar button:hover{background:#30363d}
+#toolbar button.act{background:#1f6feb;border-color:#1f6feb;color:#fff}
+#toolbar button svg{width:12px;height:12px;fill:currentColor}
+#toolbar .spacer{flex:1}
+#toolbar .time{color:#8b949e;font-family:monospace;font-size:11px;white-space:nowrap}
+#toolbar .dur{color:#484f58;margin-left:2px}
+#timeline{height:32px;background:#0d1117;border-bottom:1px solid #21262d;position:relative;cursor:pointer;flex-shrink:0;overflow:hidden}
+#timeline canvas{position:absolute;inset:0;width:100%;height:100%}
+#timeline .scrub{position:absolute;top:0;width:3px;height:100%;background:#f0883e;z-index:2;pointer-events:none;transform:translateX(-50%);transition:left .05s linear;box-shadow:0 0 6px rgba(240,136,62,.4)}
+#events{flex:1;overflow-y:auto;overflow-x:hidden;min-height:0}
+#events .e{display:flex;align-items:center;gap:6px;padding:3px 10px;border-bottom:1px solid #0d1117;cursor:pointer;transition:background .1s;font:10px/1.5 monospace}
+#events .e:hover{background:#1c2128}
+#events .e.cur{background:#1c2128;border-left:2px solid #58a6ff}
+#events .e .icon{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+#events .e .icon.move{background:#58a6ff}
+#events .e .icon.click{background:#f0c000}
+#events .e .icon.scroll{background:#3fb950}
+#events .e .icon.touch{background:#bc8cff}
+#events .e .icon.touch_end{background:#bc8cff;opacity:.5}
+#events .e .tm{color:#484f58;width:48px;flex-shrink:0}
+#events .e .ty{color:#58a6ff;font-weight:600;width:40px;flex-shrink:0}
+#events .e .ty.click{color:#f0c000}
+#events .e .ty.scroll{color:#3fb950}
+#events .e .info{color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#events .e .info .el{color:#e6edf3}
+#events .e .info .txt{color:#8b949e}
+#events .e .sig{color:#f0883e;margin-left:auto;flex-shrink:0;font-weight:600}
+#mutations{max-height:0;overflow:hidden;transition:max-height .25s;background:#0d1117;border-top:1px solid #21262d;flex-shrink:0}
+#mutations.open{max-height:180px;overflow-y:auto}
+#mutations .h{padding:4px 10px;color:#8b949e;font:10px monospace;border-bottom:1px solid #161b22;position:sticky;top:0;background:#0d1117}
+#mutations .m{padding:2px 10px;font:9px/1.4 monospace;color:#484f58;border-bottom:1px solid #161b22;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#mutations .m .hl{color:#da3633}
+#mutations .m .ch{color:#3fb950}
+#mutations .m .at{color:#d29922}
+</style>
+</head>
+<body>
+<div id="status">
+  <div class="spinner"></div>
+  <div class="msg">Loading session...</div>
+</div>
+<div id="header" style="display:none">
+  <span class="title">Session Replay</span>
+  <span class="meta" id="hdrMeta"></span>
+  <button class="close" onclick="window.close()">✕</button>
+</div>
+<div id="main" style="display:none">
+  <div id="viewport">
+    <iframe id="vpIframe" sandbox="allow-scripts"></iframe>
+    <div id="viewctrl">
+      <button id="btnHeat" onclick="toggleHeat()">🔥 Heatmap</button>
+    </div>
+  </div>
+  <div id="sidebar">
+    <div id="toolbar">
+      <button id="btnPlay" onclick="togglePlay()">
+        <svg viewBox="0 0 16 16"><polygon points="4,2 14,8 4,14"/></svg>
+        <span>Play</span>
+      </button>
+      <button id="btnRestart" onclick="restart()">
+        <svg viewBox="0 0 16 16"><path d="M4 8a4 4 0 0 1 7.17-2.17L12 7H9v1h4.5V3.5h-1V5.2l-.83-.86A5 5 0 1 0 13 8h-1a4 4 0 0 1-8 0z"/></svg>
+      </button>
+      <button id="btnSpeed" class="act" onclick="cycleSpeed()">1×</button>
+      <span class="spacer"></span>
+      <span class="time" id="timeDisplay">00:00.0</span>
+      <span class="dur" id="durDisplay">/ 00:00</span>
+    </div>
+    <div id="timeline">
+      <canvas id="tlCanvas"></canvas>
+      <div class="scrub" id="tlScrub"></div>
+    </div>
+    <div id="events"></div>
+    <div id="mutations">
+      <div class="h" id="mutHeader">DOM Mutations (0)</div>
+    </div>
+  </div>
+</div>
+
+<script>
+let E = [], T0 = 0, T1 = 0, DUR = 1, curT = 0, playing = false, speed = 1, pa = 0;
+let showHeat = false;
+const ifr = document.getElementById('vpIframe');
+const list = document.getElementById('events');
+const tlCanvas = document.getElementById('tlCanvas');
+const ctx = tlCanvas.getContext('2d');
+const scrub = document.getElementById('tlScrub');
+const timeDisplay = document.getElementById('timeDisplay');
+const durDisplay = document.getElementById('durDisplay');
+const hdrMeta = document.getElementById('hdrMeta');
+const mutHeader = document.getElementById('mutHeader');
+
+function fmt(t) {
+  const s = Math.max(0, Math.floor(t / 1000));
+  return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0') + '.' + (Math.floor((t % 1000) / 100));
+}
+
+// ─── Load ──────────────────────────────────────────────────────
+const params = new URLSearchParams(location.search);
+const sessionId = params.get('session');
+if (!sessionId) {
+  document.querySelector('.msg').textContent = 'No session ID specified';
+  return;
+}
+
+async function load() {
+  try {
+    const res = await fetch(`/api/replay/${encodeURIComponent(sessionId)}`);
+    if (!res.ok) throw new Error('Not found');
+    const data = await res.json();
+    if (!data.snapshot) throw new Error('No snapshot');
+
+    E = data.events || [];
+    T0 = E.length > 0 ? E[0].t : 0;
+    T1 = E.length > 0 ? E[E.length - 1].t : 0;
+    DUR = Math.max(T1 - T0, 1);
+    curT = 0;
+
+    const hdrInfo = [];
+    if (data.meta) {
+      hdrInfo.push(data.meta.source || '?');
+      hdrInfo.push(`tier0: ${(data.meta.tier0_score || 0).toFixed(2)}`);
+    }
+    hdrInfo.push(`${E.length} events`);
+    if (data.start_t) hdrInfo.push(new Date(data.start_t).toLocaleTimeString());
+    hdrMeta.textContent = hdrInfo.join(' | ');
+
+    document.getElementById('status').style.display = 'none';
+    document.getElementById('header').style.display = 'flex';
+    document.getElementById('main').style.display = 'flex';
+
+    durDisplay.textContent = '/ ' + fmt(DUR);
+
+    // Inject replay engine into snapshot
+    let snapHtml = data.snapshot.html;
+    // Strip all script tags, event handlers, javascript: URLs, and dangerous tags
+    snapHtml = snapHtml
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<script[\s>]/gi, '<span data-stripped="script" ')
+      .replace(/\son\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+      .replace(/\s+(href|src|data|action|formaction|xlink:href)\s*=\s*(?:"javascript:[^"]*"|'javascript:[^']*')/gi, ' $1="[REMOVED]"')
+      .replace(/<(?:object|embed|applet)\b[^>]*>/gi, '')
+      .replace(/<\/(?:object|embed|applet)>/gi, '');
+
+    const replayEngine = `
+<style>
+#_c{position:fixed;top:0;left:0;z-index:999999;pointer-events:none;transform:translate(-50%,-50%)}
+#_c .d{width:6px;height:6px;background:#f0883e;border-radius:50%;position:absolute;top:0;left:0;box-shadow:0 0 8px rgba(240,136,62,.6)}
+#_c .r{width:12px;height:12px;border:2px solid rgba(240,136,62,.5);border-radius:50%;position:absolute;top:-3px;left:-3px;transition:transform .1s,opacity .1s}
+#_c.click .r{transform:scale(3);border-color:#ff0;opacity:.2}
+#_c.click .d{background:#ff0;box-shadow:0 0 12px rgba(255,255,0,.5)}
+.clickFlare{position:fixed;z-index:999998;pointer-events:none;border-radius:50%;background:radial-gradient(circle,rgba(255,200,0,.4) 0%,rgba(255,200,0,0) 70%);animation:flare .6s ease-out forwards}
+@keyframes flare{from{transform:scale(.5);opacity:1}to{transform:scale(3);opacity:0}}
+#_trail{position:fixed;top:0;left:0;z-index:999997;pointer-events:none}
+#_heat{position:fixed;top:0;left:0;z-index:999996;pointer-events:none;display:none}
+#_h{position:fixed;z-index:999995;pointer-events:none;border:2px solid rgba(240,136,62,.5);background:rgba(240,136,62,.08);border-radius:6px;display:none;transition:left .05s,top .05s,width .05s,height .05s}
+#_i{position:fixed;bottom:10px;left:10px;z-index:999994;background:rgba(0,0,0,.75);color:#e6edf3;padding:5px 10px;border-radius:5px;font:11px/1.4 -apple-system,sans-serif;display:none;pointer-events:none;max-width:60vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08)}
+</style>
+<div id=_c style="display:none"><div class=d></div><div class=r></div></div>
+<canvas id=_trail></canvas>
+<canvas id=_heat></canvas>
+<div id=_h></div>
+<div id=_i></div>
+<script>
+(function(){
+var E=${JSON.stringify(E)},T0=${T0},T1=${T1},curT=${T0},playing=false,firstFrame=true;
+var speed=1,pa=0,scrollAt=[],scrollInterp=0;
+var cx=document.getElementById('_c'),tr=document.getElementById('_trail'),tctx=tr.getContext('2d');
+var hm=document.getElementById('_heat'),hctx=hm.getContext('2d');
+var hl=document.getElementById('_h'),inf=document.getElementById('_i');
+var trailPoints=[];
+
+function resize(){
+ var r=document.documentElement.getBoundingClientRect();
+ tr.width=r.width;tr.height=r.height;
+ hm.width=r.width;hm.height=r.height;
+ drawHeat();
+}
+window.addEventListener('resize',resize);
+
+function precompute(){
+ scrollAt=[];var sy=0;
+ for(var i=0;i<E.length;i++){
+  if(E[i].scroll_y!=null)sy=E[i].scroll_y;
+  scrollAt[i]=sy;
+ }
+}
+precompute();
+
+function scrollY(idx){return idx>=0&&idx<scrollAt.length?scrollAt[idx]:0}
+
+function interpolate(tm){
+ if(E.length===0)return{lo:0,hi:0,frac:0};
+ var lo=0,hi=E.length-1;
+ while(lo<hi-1){var m=(lo+hi)>>1;if(E[m].t<=tm)lo=m;else hi=m}
+ var frac=E[hi].t!==E[lo].t?(tm-E[lo].t)/(E[hi].t-E[lo].t):0;
+ return {lo:lo,hi:hi,frac:Math.max(0,Math.min(1,frac))};
+}
+
+function paint(tm){
+ if(E.length===0){cx.style.display='none';hl.style.display='none';inf.style.display='none';return}
+ tm=Math.max(T0,Math.min(T1,tm));
+ var ip=interpolate(tm);
+ var lo=ip.lo,hi=ip.hi,frac=ip.frac;
+ var cur=E[lo],nxt=E[hi];
+ var x=cur.x!=null&&nxt.x!=null?cur.x+(nxt.x-cur.x)*frac:(nxt.x!=null?nxt.x:cur.x);
+ var y=cur.y!=null&&nxt.y!=null?cur.y+(nxt.y-cur.y)*frac:(nxt.y!=null?nxt.y:cur.y);
+ var sy=cur.scroll_y!=null?cur.scroll_y:scrollY(lo);
+ var isClick=cur.type==='click'||(nxt.type==='click'&&frac<.3);
+
+ if(x!=null&&y!=null){
+  cx.style.display='block';
+  cx.style.left=Math.round(x)+'px';
+  cx.style.top=Math.round(y)+'px';
+  cx.className=isClick?'click':'';
+ }
+ if(isClick&&cur.type==='click'&&cur.selector)showHighlight(cur.selector);
+ else hideHighlight();
+
+ // Smooth scroll
+ if(sy!=null&&!firstFrame){
+  var curSy=window.scrollY;
+  var diff=sy-curSy;
+  if(Math.abs(diff)>1){
+   window.scrollTo(0,curSy+diff*.25);
+  }
+ }
+ firstFrame=false;
+
+ // Trail
+ tctx.clearRect(0,0,tr.width,tr.height);
+ if(x!=null&&y!=null){
+  trailPoints.push({x:x,y:y,t:tm});
+  if(trailPoints.length>200)trailPoints.shift();
+ }
+ if(trailPoints.length>=2){
+  var grad=tctx.createLinearGradient(0,0,0,tr.height);
+  grad.addColorStop(0,'rgba(88,166,255,0)');
+  grad.addColorStop(.5,'rgba(88,166,255,.12)');
+  grad.addColorStop(1,'rgba(88,166,255,0)');
+  tctx.strokeStyle=grad;
+  tctx.lineWidth=1.5;
+  tctx.beginPath();
+  var started=false;
+  var scrollOff=sy||0;
+  for(var i=0;i<trailPoints.length;i++){
+   var px=trailPoints[i].x,py=trailPoints[i].y;
+   if(i>0){
+    var dt=trailPoints[i].t-trailPoints[i-1].t;
+    if(dt>500){tctx.stroke();tctx.beginPath();started=false;continue}
+   }
+   if(!started){tctx.moveTo(px,py);started=true}else tctx.lineTo(px,py);
+  }
+  if(started)tctx.stroke();
+ }
+
+ // Element info
+ if(x!=null&&y!=null){
+  var el=document.elementFromPoint(x+10,y+10);
+  if(el&&el!==document.body&&el!==document.documentElement){
+   var tag=el.tagName.toLowerCase();
+   var txt=(el.textContent||'').trim().slice(0,60);
+   inf.style.display='block';
+   inf.textContent='<'+tag+'>'+(el.id?'#'+el.id:'')+(el.className&&typeof el.className==='string'?'.'+el.className.trim().split(/\\s+/).slice(0,2).join('.'):'')+(txt?' "'+txt+'"':'');
+  }else{inf.style.display='none'}
+ }
+ parent.postMessage({type:'replay_tick',time:tm,lo:lo,hi:hi,frac:frac,isClick:isClick},'*');
+}
+
+function showHighlight(sel){
+ try{
+  var el=document.querySelector(sel);
+  if(!el||!el.getBoundingClientRect){hl.style.display='none';return}
+  var r=el.getBoundingClientRect();
+  if(r.width===0&&r.height===0){hl.style.display='none';return}
+  hl.style.display='block';hl.style.left=r.left+'px';hl.style.top=r.top+'px';
+  hl.style.width=r.width+'px';hl.style.height=r.height+'px';
+ }catch(e){hl.style.display='none'}
+}
+function hideHighlight(){hl.style.display='none'}
+
+function drawHeat(){
+ hctx.clearRect(0,0,hm.width,hm.height);
+ if(E.length===0)return;
+ for(var i=0;i<E.length;i++){
+  if(E[i].type!=='click'||E[i].x==null||E[i].y==null)continue;
+  var px=E[i].x,py=E[i].y+scrollY(i);
+  var grd=hctx.createRadialGradient(px,py,0,px,py,50);
+  grd.addColorStop(0,'rgba(240,136,62,.35)');
+  grd.addColorStop(0.4,'rgba(240,200,50,.15)');
+  grd.addColorStop(1,'rgba(240,200,50,0)');
+  hctx.fillStyle=grd;
+  hctx.beginPath();hctx.arc(px,py,50,0,Math.PI*2);hctx.fill();
+  hctx.beginPath();hctx.arc(px,py,3,0,Math.PI*2);
+  hctx.fillStyle='rgba(240,200,50,.6)';hctx.fill();
+ }
+}
+
+function frame(now){
+ if(!playing)return;
+ if(!pa)pa=now;
+ var dt=(now-pa)*speed;
+ pa=now;
+ curT=Math.min(T1,curT+dt);
+ paint(curT);
+ if(curT>=T1){playing=false;parent.postMessage({type:'replay_done'},'*')}
+ else requestAnimationFrame(frame);
+}
+
+window.addEventListener('message',function(e){
+ var d=e.data||{};
+ if(d.type==='replay_play'){
+  playing=d.play;pa=0;
+  if(playing){if(curT>=T1){curT=T0;window.scrollTo(0,0)}firstFrame=true;requestAnimationFrame(frame)}
+ }
+ if(d.type==='replay_seek'){
+  curT=Math.max(T0,Math.min(T1,d.time));
+  if(E.length>0){var sy=scrollAt[E.length-1];if(sy!=null)window.scrollTo(0,sy);}
+  firstFrame=true;paint(curT);
+ }
+ if(d.type==='replay_speed'){speed=d.speed}
+ if(d.type==='replay_restart'){curT=T0;window.scrollTo(0,0);firstFrame=true;paint(T0)}
+ if(d.type==='replay_heat'){hm.style.display=d.show?'block':'none';if(d.show)drawHeat()}
+});
+parent.postMessage({type:'replay_init'},'*');
+if(E.length>0)paint(T0);
+resize();
+})();
+<\/script>`;
+
+    const bodyIdx = snapHtml.lastIndexOf('</body>');
+    const finalHtml = bodyIdx >= 0
+      ? snapHtml.slice(0, bodyIdx) + replayEngine + snapHtml.slice(bodyIdx)
+      : snapHtml + replayEngine;
+
+    ifr.srcdoc = finalHtml;
+
+    // Build event list
+    buildEventList(data.mutations || []);
+  } catch (err) {
+    document.querySelector('.msg').textContent = 'Error: ' + err.message;
+    console.error(err);
+  }
+}
+
+// ─── Event list ────────────────────────────────────────────────
+function buildEventList(mutations) {
+  list.innerHTML = '';
+  const marks = document.getElementById('tlCanvas');
+  resizeTimeline();
+
+  E.forEach(function(e, i) {
+    const d = document.createElement('div');
+    d.className = 'e';
+    d.dataset.idx = i;
+    const icon = document.createElement('div');
+    icon.className = 'icon ' + (e.type === 'click' ? 'click' : e.type === 'scroll' ? 'scroll' : e.type.startsWith('touch') ? 'touch' : 'move');
+    d.appendChild(icon);
+    const tm = document.createElement('span');
+    tm.className = 'tm';
+    tm.textContent = fmt(e.t - T0);
+    d.appendChild(tm);
+    const ty = document.createElement('span');
+    ty.className = 'ty' + (e.type === 'click' ? ' click' : e.type === 'scroll' ? ' scroll' : '');
+    ty.textContent = e.type === 'move' ? 'move' : e.type === 'touch_end' ? 't-end' : e.type;
+    d.appendChild(ty);
+    const info = document.createElement('span');
+    info.className = 'info';
+    if (e.tag) {
+      const el = document.createElement('span');
+      el.className = 'el';
+      el.textContent = '<' + e.tag + '>';
+      info.appendChild(el);
+    }
+    if (e.text) {
+      const txt = document.createElement('span');
+      txt.className = 'txt';
+      txt.textContent = ' "' + e.text.slice(0, 40) + '"';
+      info.appendChild(txt);
+    }
+    if (e.scroll_y != null) {
+      info.appendChild(document.createTextNode(' y=' + e.scroll_y));
+    }
+    d.appendChild(info);
+    if (e.intent_p != null) {
+      const sig = document.createElement('span');
+      sig.className = 'sig';
+      sig.textContent = (e.intent_p * 100).toFixed(0) + '%';
+      d.appendChild(sig);
+    }
+    d.addEventListener('click', function() { seek(e.t); });
+    list.appendChild(d);
+  });
+
+  // Mutations header
+  if (mutations && mutations.length > 0) {
+    mutHeader.textContent = 'DOM Mutations (' + mutations.length + ')';
+    const mp = document.getElementById('mutations');
+    mp.innerHTML = '<div class="h" id="mutHeader">DOM Mutations (' + mutations.length + ')</div>';
+    mutations.forEach(function(m) {
+      const md = document.createElement('div');
+      md.className = 'm';
+      const ch = document.createElement('span');
+      const tl = document.createElement('span');
+      if (m.type === 'childList') {
+        ch.className = 'ch';
+        ch.textContent = (m.addedNodes ? 'added' : '') + (m.removedNodes ? ' removed' : '');
+        tl.textContent = ' ' + (m.target || '');
+      } else if (m.type === 'attributes') {
+        ch.className = 'at';
+        ch.textContent = m.attributeName || '';
+        tl.textContent = '="' + (m.attributeValue || '') + '" on ' + (m.target || '');
+      } else if (m.type === 'characterData') {
+        ch.className = 'hl';
+        ch.textContent = 'text';
+        tl.textContent = ' "' + (m.textContent || '').slice(0, 60) + '"';
+      }
+      md.appendChild(ch);
+      md.appendChild(tl);
+      mp.appendChild(md);
+    });
+    mp.classList.add('open');
+  }
+}
+
+// ─── Playback controls ────────────────────────────────────────
+function postToIframe(msg) {
+  if (ifr && ifr.contentWindow) ifr.contentWindow.postMessage(msg, '*');
+}
+
+function togglePlay() {
+  playing = !playing;
+  const btn = document.getElementById('btnPlay');
+  if (playing) {
+    btn.innerHTML = '<svg viewBox="0 0 16 16" style="width:12px;height:12px"><rect x="3" y="2" width="4" height="12" rx="1"/><rect x="9" y="2" width="4" height="12" rx="1"/></svg> <span>Pause</span>';
+    btn.classList.add('act');
+    postToIframe({ type: 'replay_play', play: true });
+  } else {
+    btn.innerHTML = '<svg viewBox="0 0 16 16" style="width:12px;height:12px"><polygon points="4,2 14,8 4,14"/></svg> <span>Play</span>';
+    btn.classList.remove('act');
+    postToIframe({ type: 'replay_play', play: false });
+  }
+}
+
+function restart() {
+  playing = false;
+  curT = T0;
+  document.getElementById('btnPlay').innerHTML = '<svg viewBox="0 0 16 16" style="width:12px;height:12px"><polygon points="4,2 14,8 4,14"/></svg> <span>Play</span>';
+  document.getElementById('btnPlay').classList.remove('act');
+  postToIframe({ type: 'replay_restart' });
+  seek(T0);
+}
+
+function cycleSpeed() {
+  const speeds = [1, 2, 4, 0.5];
+  const btn = document.getElementById('btnSpeed');
+  const cur = parseFloat(btn.textContent);
+  const idx = speeds.indexOf(cur);
+  speed = speeds[(idx + 1) % speeds.length];
+  btn.textContent = speed + '×';
+  postToIframe({ type: 'replay_speed', speed: speed });
+}
+
+function toggleHeat() {
+  showHeat = !showHeat;
+  const btn = document.getElementById('btnHeat');
+  btn.classList.toggle('on', showHeat);
+  postToIframe({ type: 'replay_heat', show: showHeat });
+}
+
+function seek(t) {
+  t = Math.max(T0, Math.min(T1, t));
+  curT = t;
+  updateTimeline(t);
+  timeDisplay.textContent = fmt(t - T0);
+  postToIframe({ type: 'replay_seek', time: t });
+}
+
+function updateTimeline(t) {
+  const pct = DUR > 0 ? ((t - T0) / DUR * 100) : 0;
+  scrub.style.left = pct + '%';
+}
+
+// ─── Timeline rendering ──────────────────────────────────────
+function resizeTimeline() {
+  const tl = document.getElementById('timeline');
+  tlCanvas.width = tl.offsetWidth;
+  tlCanvas.height = tl.offsetHeight;
+  drawTimeline();
+}
+
+function drawTimeline() {
+  const w = tlCanvas.width;
+  const h = tlCanvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  // Background
+  ctx.fillStyle = '#0d1117';
+  ctx.fillRect(0, 0, w, h);
+
+  if (E.length === 0) return;
+
+  // Draw scroll zones (green) where user scrolled
+  ctx.fillStyle = 'rgba(63,185,80,.08)';
+  for (let i = 0; i < E.length; i++) {
+    if (E[i].type === 'scroll') {
+      const x = ((E[i].t - T0) / DUR) * w;
+      ctx.fillRect(x - 1, 0, 3, h);
+    }
+  }
+
+  // Draw clicks (yellow markers)
+  for (let i = 0; i < E.length; i++) {
+    if (E[i].type === 'click') {
+      const x = ((E[i].t - T0) / DUR) * w;
+      ctx.beginPath();
+      ctx.arc(x, h / 2, 3, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(240,192,0,.5)';
+      ctx.fill();
+    }
+  }
+
+  // Draw intent probability line if available
+  const hasIntent = E.some(e => e.intent_p != null);
+  if (hasIntent) {
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(240,136,62,.4)';
+    ctx.lineWidth = 1;
+    let started = false;
+    for (let i = 0; i < E.length; i++) {
+      if (E[i].intent_p == null) continue;
+      const x = ((E[i].t - T0) / DUR) * w;
+      const y = h - (E[i].intent_p * h);
+      if (!started) { ctx.moveTo(x, y); started = true; }
+      else ctx.lineTo(x, y);
+    }
+    if (started) ctx.stroke();
+
+    // Threshold line
+    ctx.strokeStyle = 'rgba(240,136,62,.15)';
+    ctx.setLineDash([2, 4]);
+    ctx.beginPath();
+    const thY = h * (1 - 0.4);
+    ctx.moveTo(0, thY);
+    ctx.lineTo(w, thY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Active zone (where user was moving)
+  for (let i = 0; i < E.length - 1; i++) {
+    if (E[i].type === 'move' || E[i].type === 'click') {
+      const x1 = ((E[i].t - T0) / DUR) * w;
+      const x2 = ((E[i + 1].t - T0) / DUR) * w;
+      if (x2 - x1 < 0.5) continue;
+      ctx.fillStyle = 'rgba(88,166,255,.04)';
+      ctx.fillRect(x1, 0, x2 - x1, h);
+    }
+  }
+}
+
+// ─── Message handlers ─────────────────────────────────────────
+let sentEvents = false;
+window.addEventListener('message', function(e) {
+  if (e.source !== ifr.contentWindow) return;
+  const d = e.data || {};
+  if (d.type === 'replay_init' && !sentEvents) {
+    sentEvents = true;
+  }
+  if (d.type === 'replay_ready') {
+    DUR = d.dur;
+    durDisplay.textContent = '/ ' + fmt(DUR);
+    drawTimeline();
+  }
+  if (d.type === 'replay_tick') {
+    updateTimeline(d.time);
+    timeDisplay.textContent = fmt(d.time - T0);
+  }
+  if (d.type === 'replay_done') {
+    playing = false;
+    document.getElementById('btnPlay').innerHTML = '<svg viewBox="0 0 16 16" style="width:12px;height:12px"><polygon points="4,2 14,8 4,14"/></svg> <span>Play</span>';
+    document.getElementById('btnPlay').classList.remove('act');
+  }
+});
+
+// ─── Timeline click ───────────────────────────────────────────
+document.getElementById('timeline').addEventListener('click', function(e) {
+  const r = this.getBoundingClientRect();
+  const pct = (e.clientX - r.left) / r.width;
+  seek(T0 + pct * DUR);
+});
+
+window.addEventListener('resize', resizeTimeline);
+
+load();
+</script>
+</body>
+</html>

@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intent Engine — Full Dashboard</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #0d1117; color: #c9d1d9; padding: 16px; min-height: 100vh;
+  font-size: 13px;
+}
+.header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #21262d;
+}
+.header h1 { font-size: 18px; font-weight: 600; color: #f0f6fc; }
+.header-right { display: flex; align-items: center; gap: 12px; font-size: 12px; color: #8b949e; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.dot.on { background: #3fb950; }
+.dot.off { background: #f85149; }
+
+.grid { display: grid; gap: 8px; margin-bottom: 8px; }
+.g4 { grid-template-columns: repeat(4, 1fr); }
+.g3 { grid-template-columns: repeat(3, 1fr); }
+.g2 { grid-template-columns: 1fr 1fr; }
+
+.card {
+  background: #161b22; border: 1px solid #21262d; border-radius: 6px; padding: 12px;
+}
+.ch { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.ct { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #8b949e; }
+
+.v0 { font-size: 28px; font-weight: 700; color: #f0f6fc; font-variant-numeric: tabular-nums; }
+.v1 { font-size: 18px; font-weight: 600; color: #f0f6fc; font-variant-numeric: tabular-nums; }
+.v2 { font-size: 13px; font-weight: 500; color: #f0f6fc; }
+.dim { color: #8b949e; }
+.mono { font-family: 'SF Mono','Fira Code','Cascadia Code',monospace; font-size: 10px; line-height: 1.5; }
+
+.gauge-w { position: relative; width: 140px; height: 70px; margin: 0 auto; overflow: hidden; }
+.gbg { fill: none; stroke: #21262d; stroke-width: 6; }
+.gfl { fill: none; stroke: #58a6ff; stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.3s; }
+.gvl { font-size: 20px; font-weight: 700; fill: #f0f6fc; text-anchor: middle; }
+.gsb { font-size: 8px; fill: #8b949e; text-anchor: middle; }
+
+.trig { display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+.trig.on { background: rgba(63,185,80,0.15); color: #3fb950; border: 1px solid rgba(63,185,80,0.3); }
+.trig.off { background: rgba(139,148,158,0.1); color: #8b949e; border: 1px solid rgba(139,148,158,0.2); }
+
+.bar { height: 5px; background: #21262d; border-radius: 3px; overflow: hidden; margin-top: 3px; }
+.bar-f { height: 100%; border-radius: 3px; transition: width 0.3s, background 0.3s; }
+
+.tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 3px; }
+.tag { padding: 2px 6px; border-radius: 8px; font-size: 9px; font-weight: 500; background: rgba(88,166,255,0.1); color: #58a6ff; border: 1px solid rgba(88,166,255,0.2); }
+.tag.on { background: rgba(63,185,80,0.12); color: #3fb950; border-color: rgba(63,185,80,0.25); }
+
+table { width: 100%; border-collapse: collapse; font-size: 10px; }
+th { text-align: left; color: #8b949e; font-weight: 500; padding: 3px 6px 3px 0; border-bottom: 1px solid #21262d; font-size: 9px; text-transform: uppercase; letter-spacing: 0.03em; }
+td { padding: 2px 6px 2px 0; border-bottom: 1px solid #161b22; font-family: 'SF Mono','Fira Code',monospace; font-size: 10px; }
+td:last-child { padding-right: 0; }
+tr:last-child td { border-bottom: none; }
+.n { text-align: right; }
+
+.log-b {
+  background: #0d1117; border: 1px solid #21262d; border-radius: 4px;
+  padding: 6px; height: 200px; overflow-y: auto; font-family: 'SF Mono','Fira Code',monospace; font-size: 9px; line-height: 1.5;
+}
+.log-l { padding: 1px 0; word-break: break-all; }
+.log-l .tm { color: #484f58; }
+.log-l .ky { color: #58a6ff; }
+.log-l .vl { color: #f0f6fc; }
+.log-l .sy { color: #8b949e; }
+
+.lbl { font-size: 10px; font-weight: 600; color: #8b949e; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 4px; }
+
+.json-b {
+  background: #0d1117; border: 1px solid #21262d; border-radius: 4px;
+  padding: 8px; height: 200px; overflow: auto; font-family: 'SF Mono','Fira Code',monospace;
+  font-size: 9px; line-height: 1.4; white-space: pre-wrap;
+}
+
+@media (max-width: 900px) { .g4, .g3, .g2 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .g4, .g3, .g2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Intent Engine</h1>
+  <div class="header-right">
+    <span><span class="dot off" id="sDot"></span><span id="sTxt">Disconnected</span></span>
+    <span id="tCnt">0 ticks</span>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:8px">
+  <div class="lbl">Active Sessions <span id="sCount" class="dim" style="font-weight:400">(0)</span></div>
+  <div style="max-height:200px;overflow-y:auto">
+  <table id="sTable">
+    <tr><th>Session ID</th><th>Source</th><th>Started</th><th class="n">DOM</th><th class="n">Mut</th><th class="n">Evts</th><th>Last Click</th><th>Actions</th></tr>
+    <tr id="sNoRows"><td colspan="8" class="dim" style="text-align:center;padding:8px">No active sessions</td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="grid g4">
+  <div class="card">
+    <div class="ch"><span class="ct">Intent Probability</span><span class="trig off" id="tBadge">○</span></div>
+    <div class="gauge-w">
+      <svg viewBox="0 0 140 80" width="140" height="80">
+        <path class="gbg" d="M 10 70 A 60 60 0 0 1 130 70"/>
+        <path class="gfl" id="gArc" d="M 10 70 A 60 60 0 0 1 130 70" stroke-dasharray="157" stroke-dashoffset="157"/>
+        <text class="gvl" id="gVal" x="70" y="44">0%</text>
+        <text class="gsb" x="70" y="56">probability</text>
+      </svg>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch"><span class="ct">Intent EMA</span><span class="dim" style="font-size:9px">threshold 0.6</span></div>
+    <div class="v0" id="emaVal">—</div>
+    <div class="bar"><div class="bar-f" id="emaFill" style="width:0%;background:#58a6ff"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:9px;color:#484f58;margin-top:1px">0<span>1</span></div>
+  </div>
+  <div class="card">
+    <div class="ch"><span class="ct">Humanness</span></div>
+    <div class="v0" id="humVal">—</div>
+    <div class="bar"><div class="bar-f" id="humFill" style="width:0%;background:#d2a8ff"></div></div>
+  </div>
+  <div class="card">
+    <div class="ch"><span class="ct">Tier 0 / Trigger</span></div>
+    <div style="display:flex;gap:12px;align-items:baseline">
+      <span class="v0" id="tier0Val">—</span>
+      <span class="dim" style="font-size:10px">threshold</span>
+    </div>
+  </div>
+</div>
+
+<div class="grid g3">
+  <div class="card">
+    <div class="lbl">Welford Accumulators</div>
+    <table>
+      <tr><th></th><th class="n">n</th><th class="n">Mean</th><th class="n">M2</th><th class="n">Variance</th></tr>
+      <tr><td>E (curvature)</td><td class="n" id="wE_n">—</td><td class="n" id="wE_m">—</td><td class="n" id="wE_M">—</td><td class="n" id="wE_v">—</td></tr>
+      <tr><td>R (reversals)</td><td class="n" id="wR_n">—</td><td class="n" id="wR_m">—</td><td class="n" id="wR_M">—</td><td class="n" id="wR_v">—</td></tr>
+      <tr><td>Jerk</td><td class="n" id="wJ_n">—</td><td class="n" id="wJ_m">—</td><td class="n" id="wJ_M">—</td><td class="n" id="wJ_v">—</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <div class="lbl">Humanness Component Scores</div>
+    <table>
+      <tr><th>Component</th><th class="n">Raw</th><th class="n">Weight</th><th class="n">Score</th></tr>
+      <tr><td>Tier 0</td><td class="n" id="hc_t0r">—</td><td class="n">1.0</td><td class="n" id="hc_t0">—</td></tr>
+      <tr><td>E variance</td><td class="n" id="hc_er">—</td><td class="n">1.0</td><td class="n" id="hc_e">—</td></tr>
+      <tr><td>R variance</td><td class="n" id="hc_rr">—</td><td class="n">1.0</td><td class="n" id="hc_r">—</td></tr>
+      <tr><td>Fitts corr</td><td class="n" id="hc_fr">—</td><td class="n">1.0</td><td class="n" id="hc_f">—</td></tr>
+      <tr><td colspan="3" style="font-weight:600">Weighted avg</td><td class="n" id="hc_total" style="font-weight:600">—</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <div class="lbl">Hysteresis</div>
+    <table>
+      <tr><th>Field</th><th>Value</th></tr>
+      <tr><td>EMA value</td><td id="hEma" class="mono">—</td></tr>
+      <tr><td>Above threshold since</td><td id="hSince" class="mono">—</td></tr>
+      <tr><td>Last trigger</td><td id="hTrig" class="mono">—</td></tr>
+      <tr><td>Alpha (smoothing)</td><td id="hAlpha" class="mono">—</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="grid g3">
+  <div class="card">
+    <div class="lbl">Signals &amp; LR Weights</div>
+    <div class="tags" id="sigList"><span class="dim" style="font-size:10px">none</span></div>
+    <div style="margin-top:4px;font-size:9px" id="lrDetail" class="mono dim"></div>
+  </div>
+  <div class="card">
+    <div class="lbl">Curves &amp; Fitts</div>
+    <table>
+      <tr><th>Metric</th><th class="n">Value</th></tr>
+      <tr><td>Curve buffer points</td><td class="n" id="curBuf">—</td></tr>
+      <tr><td>Fitts pairs collected</td><td class="n" id="fitCnt">—</td></tr>
+      <tr><td>Fitts correlation (r)</td><td class="n" id="fitCorr">—</td></tr>
+      <tr><td>Min pairs required</td><td class="n" id="fitMin">4</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <div class="lbl">Session Details (<span id="sDetailId" class="dim">none selected</span>)</div>
+    <table>
+      <tr><th>Field</th><th>Value</th></tr>
+      <tr><td>Source</td><td id="sSrc" class="mono">—</td></tr>
+      <tr><td>Started</td><td id="sStart" class="mono">—</td></tr>
+      <tr><td>Scroll Y</td><td id="sScr" class="mono">—</td></tr>
+      <tr><td>Mixed input</td><td id="sMix" class="mono">—</td></tr>
+      <tr><td>Pricing rect</td><td id="sPrice" class="mono">—</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="grid g2">
+  <div class="card">
+    <div class="ch"><span class="ct">Raw Event Log</span></div>
+    <div class="log-b" id="evtLog"><div class="dim" style="font-size:10px">Waiting for data...</div></div>
+  </div>
+  <div class="card">
+    <div class="lbl">DOM &amp; Element Capture</div>
+    <table>
+      <tr><th>Metric</th><th class="n">Value</th></tr>
+      <tr><td>DOM snapshot stored</td><td class="n" id="domSnap">—</td></tr>
+      <tr><td>DOM mutations tracked</td><td class="n" id="domMut">—</td></tr>
+      <tr><td>Last clicked element</td><td class="n" id="elTag">—</td></tr>
+      <tr><td>Element ID</td><td class="n" id="elId">—</td></tr>
+      <tr><td>Element classes</td><td class="n" id="elCls">—</td></tr>
+      <tr><td>CSS selector</td><td class="n" id="elSel" style="font-size:7px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</td></tr>
+      <tr><td>Text content</td><td class="n" id="elTxt" style="font-size:7px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</td></tr>
+      <tr><td>Attributes</td><td class="n" id="elAttr" style="font-size:7px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="ch"><span class="ct">Math / Calculation Trace (latest tick)</span></div>
+  <div class="json-b mono" id="mathTrace" style="height:300px">
+  Click on the demo page and move your mouse to see calculations...
+  </div>
+</div>
+
+<script>
+const WS = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/dashboard/ws`;
+let ws = null;
+let rt = null;
+let tc = 0;
+let selectedSid = null;
+let sessionsCache = {};
+
+function connect() {
+  ws = new WebSocket(WS);
+  ws.onopen = () => {
+    document.getElementById('sDot').className = 'dot on';
+    document.getElementById('sTxt').textContent = 'Connected';
+    log('system','Dashboard connected');
+  };
+  ws.onclose = () => {
+    document.getElementById('sDot').className = 'dot off';
+    document.getElementById('sTxt').textContent = 'Reconnecting...';
+    if (rt) clearTimeout(rt);
+    rt = setTimeout(connect, 2000);
+  };
+  ws.onerror = () => ws.close();
+  ws.onmessage = e => {
+    try {
+      const d = JSON.parse(e.data);
+      if (d._type === 'dashboard_tick') handleSessions(d);
+    } catch (err) { console.error('[dash] ws onmessage error:', err); }
+  };
+}
+
+function floor4(v) { return v != null ? Number(v).toFixed(4) : '\u2014'; }
+function fmtId(id) { return id ? id.slice(0,8) + '\u2026' + id.slice(-4) : '\u2014'; }
+
+function killSession(sid) {
+  fetch('/api/session/' + sid, { method: 'DELETE' })
+    .then(r => r.json())
+    .then(d => { log('system', 'Session ' + d.session_id + ' deleted'); })
+    .catch(e => log('system', 'Kill failed: ' + e.message));
+}
+
+function handleSessions(d) {
+  tc++;
+  document.getElementById('tCnt').textContent = tc + ' ticks';
+
+  const sessions = d.sessions || [];
+  sessionsCache = {};
+  for (const s of sessions) sessionsCache[s.session_id] = s;
+  document.getElementById('sCount').textContent = '(' + sessions.length + ')';
+
+  const tbl = document.getElementById('sTable');
+  // Remove all rows except header
+  while (tbl.rows.length > 1) tbl.deleteRow(1);
+
+  if (sessions.length === 0) {
+    const nr = tbl.insertRow();
+    nr.id = 'sNoRows';
+    const c = nr.insertCell(); c.colSpan = 8; c.className = 'dim';
+    c.style.cssText = 'text-align:center;padding:8px';
+    c.textContent = 'No active sessions';
+    return;
+  }
+
+  for (const s of sessions) {
+    const r = tbl.insertRow();
+    r.style.cursor = 'pointer';
+    if (s.session_id === selectedSid) r.style.background = '#1c2128';
+
+    // Session ID
+    const c0 = r.insertCell();
+    c0.className = 'mono';
+    c0.style.cssText = 'font-size:9px;word-break:break-all;max-width:140px;overflow:hidden;text-overflow:ellipsis';
+    c0.textContent = s.session_id;
+
+    // Source
+    const c1 = r.insertCell(); c1.textContent = s.source || '\u2014';
+
+    // Started
+    const c2 = r.insertCell(); c2.className = 'mono';
+    c2.textContent = s.session_start_t ? new Date(s.session_start_t).toLocaleTimeString() : '\u2014';
+
+    // DOM snapshot
+    const c3 = r.insertCell(); c3.className = 'n';
+    c3.textContent = s.dom_snapshot_stored ? 'YES' : 'NO';
+    c3.style.color = s.dom_snapshot_stored ? '#3fb950' : '#f85149';
+
+    // Mutations
+    const c4 = r.insertCell(); c4.className = 'n';
+    c4.textContent = s.dom_mutation_count ?? 0;
+
+    // Events
+    const c5 = r.insertCell(); c5.className = 'n';
+    c5.textContent = s.replay_event_count ?? 0;
+
+    // Last click
+    const c6 = r.insertCell();
+    c6.style.cssText = 'font-size:9px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+    c6.textContent = s.last_element_info?.tag ? '<' + s.last_element_info.tag + '>' : '\u2014';
+
+    // Actions
+    const c7 = r.insertCell();
+    c7.style.cssText = 'white-space:nowrap';
+    c7.innerHTML = '<a href="/replay/' + s.session_id + '" target="_blank" style="color:#58a6ff;font-size:10px;text-decoration:none">\u25B6</a>' +
+      ' <button onclick="event.stopPropagation();killSession(\'' + s.session_id + '\')" style="padding:1px 6px;border:1px solid #f85149;border-radius:3px;background:transparent;color:#f85149;cursor:pointer;font-size:9px">\u2716</button>';
+
+    // Click to select
+    r.onclick = function() { selectSession(s.session_id); };
+  }
+
+  // If no session selected, select the first one with DOM snapshot, or just the first
+  if (!selectedSid || !sessionsCache[selectedSid]) {
+    const withDom = sessions.find(s => s.dom_snapshot_stored);
+    selectSession(withDom ? withDom.session_id : (sessions[0] ? sessions[0].session_id : null));
+  } else {
+    // Update the selected session display but keep consistent
+    selectSession(selectedSid);
+  }
+}
+
+function selectSession(sid) {
+  if (!sid || !sessionsCache[sid]) return;
+  selectedSid = sid;
+  const s = sessionsCache[sid];
+
+  // Highlight row
+  const rows = document.getElementById('sTable').rows;
+  for (let i = 1; i < rows.length; i++) {
+    rows[i].style.background = rows[i].cells[0].textContent === sid ? '#1c2128' : '';
+  }
+
+  // Session details
+  document.getElementById('sDetailId').textContent = sid;
+  document.getElementById('sSrc').textContent = s.source || '\u2014';
+  document.getElementById('sStart').textContent = s.session_start_t ? new Date(s.session_start_t).toLocaleTimeString() : '\u2014';
+  document.getElementById('sScr').textContent = s.scroll_y ?? '\u2014';
+  document.getElementById('sMix').textContent = s.mixed_input ? 'yes' : 'no';
+  document.getElementById('sPrice').textContent = s.pricing_rect ? s.pricing_rect.x + ',' + s.pricing_rect.y + ' ' + s.pricing_rect.w + '\u00d7' + s.pricing_rect.h : '\u2014';
+
+  // DOM & Element capture for selected session
+  document.getElementById('domSnap').textContent = s.dom_snapshot_stored ? 'YES' : 'NO';
+  document.getElementById('domMut').textContent = s.dom_mutation_count ?? 0;
+  const el = s.last_element_info;
+  if (el) {
+    document.getElementById('elTag').textContent = el.tag;
+    document.getElementById('elId').textContent = el.id || '\u2014';
+    document.getElementById('elCls').textContent = (el.classes || []).join('.') || '\u2014';
+    document.getElementById('elSel').textContent = el.selector;
+    document.getElementById('elTxt').textContent = (el.text || '').slice(0, 80) || '\u2014';
+    const attrs = Object.entries(el.attributes || {}).map(function(kv) { return kv[0] + '=' + kv[1]; }).join(' ');
+    document.getElementById('elAttr').textContent = attrs || '\u2014';
+  } else {
+    ['elTag','elId','elCls','elSel','elTxt','elAttr'].forEach(function(id) { document.getElementById(id).textContent = '\u2014'; });
+  }
+
+  // Pipeline data for this session
+  const ip = s.intent_probability || 0;
+  const ema = s.intent_ema || 0;
+  const hf = s.humanness_factor || 0;
+  const trig = !!s.trigger;
+  const t0 = s.tier0_score || 0;
+
+  // Gauge
+  const p = Math.min(1, Math.max(0, ip));
+  const off = 157 * (1 - p);
+  document.getElementById('gArc').setAttribute('stroke-dashoffset', off);
+  document.getElementById('gArc').setAttribute('stroke', 'hsl(' + (120-p*120) + ',70%,55%)');
+  document.getElementById('gVal').textContent = (p*100).toFixed(0) + '%';
+
+  // Trigger badge
+  const tb = document.getElementById('tBadge');
+  tb.className = 'trig ' + (trig ? 'on' : 'off');
+  tb.textContent = trig ? '\u25CF Triggered' : '\u25CB Waiting';
+
+  // EMA
+  document.getElementById('emaVal').textContent = (ema*100).toFixed(1) + '%';
+  const ep = Math.min(100, Math.max(0, ema*100));
+  const ef = document.getElementById('emaFill');
+  ef.style.width = ep + '%';
+  ef.style.background = trig ? '#3fb950' : '#58a6ff';
+
+  // Humanness
+  document.getElementById('humVal').textContent = (hf*100).toFixed(1) + '%';
+  const hp = Math.min(100, Math.max(0, hf*100));
+  document.getElementById('humFill').style.width = hp + '%';
+
+  // Tier 0
+  document.getElementById('tier0Val').textContent = (t0*100).toFixed(0) + '%';
+
+  // Welford
+  function w(prefix, wd) {
+    document.getElementById(prefix + '_n').textContent = wd ? wd.n : '\u2014';
+    document.getElementById(prefix + '_m').textContent = wd ? wd.mean.toFixed(4) : '\u2014';
+    document.getElementById(prefix + '_M').textContent = wd ? wd.M2.toFixed(4) : '\u2014';
+    document.getElementById(prefix + '_v').textContent = wd && wd.n > 1 ? (wd.M2/(wd.n-1)).toFixed(6) : '\u2014';
+  }
+  w('wE', s.welford_E);
+  w('wR', s.welford_R);
+  w('wJ', s.welford_jerk);
+
+  // Humanness component scores
+  const hd = s.humanness_details || {};
+  document.getElementById('hc_t0r').textContent = floor4(t0);
+  document.getElementById('hc_t0').textContent = floor4(t0);
+  document.getElementById('hc_er').textContent = s.welford_E && s.welford_E.n > 4 ? (s.welford_E.M2/(s.welford_E.n-1)).toFixed(6) : '\u2014';
+  document.getElementById('hc_e').textContent = floor4(hd.E_score);
+  document.getElementById('hc_rr').textContent = s.welford_R && s.welford_R.n > 4 ? (s.welford_R.M2/(s.welford_R.n-1)).toFixed(6) : '\u2014';
+  document.getElementById('hc_r').textContent = floor4(hd.R_score);
+  document.getElementById('hc_fr').textContent = floor4(s.fitts_correlation);
+  document.getElementById('hc_f').textContent = floor4(hd.fitts_score);
+  document.getElementById('hc_total').textContent = floor4(hf);
+
+  // Hysteresis
+  const alpha = 2 / (7/1 + 1);
+  document.getElementById('hEma').textContent = s.hysteresis_ema_value != null ? s.hysteresis_ema_value.toFixed(6) : '\u2014';
+  document.getElementById('hSince').textContent = s.hysteresis_above_since != null ? new Date(s.hysteresis_above_since).toLocaleTimeString() : 'null (below threshold)';
+  document.getElementById('hTrig').textContent = s.hysteresis_last_trigger != null ? s.hysteresis_last_trigger : '\u2014';
+  document.getElementById('hAlpha').textContent = alpha.toFixed(4);
+
+  // Signals
+  const sigs = s.signals || [];
+  const sl = document.getElementById('sigList');
+  if (sigs.length === 0) sl.innerHTML = '<span class="dim" style="font-size:10px">none</span>';
+  else sl.innerHTML = sigs.map(function(sig) { return '<span class="tag on">' + sig + '</span>'; }).join('');
+
+  // LR details
+  const lrd = s.lr_details || {};
+  document.getElementById('lrDetail').textContent = Object.keys(lrd).length > 0 ? Object.entries(lrd).map(function(kv) { return kv[0] + ': LR=' + kv[1]; }).join('  \u00b7  ') : 'no LR entries for active signals';
+
+  // Curves & Fitts
+  document.getElementById('curBuf').textContent = s.curve_buffer_len ?? '\u2014';
+  document.getElementById('fitCnt').textContent = s.fitts_pairs_len ?? '\u2014';
+  document.getElementById('fitCorr').textContent = s.fitts_correlation != null ? s.fitts_correlation.toFixed(4) : 'null (< 4 pairs)';
+
+  // Event log
+  let enrich = 'ip=' + (ip*100).toFixed(1) + '% ema=' + (ema*100).toFixed(1) + '% hum=' + (hf*100).toFixed(1) + '% trig=' + trig;
+  if (el) enrich += ' last_click=<' + el.tag + (el.id?'#'+el.id:'') + '>';
+  log('tick', enrich);
+
+  // Full math trace
+  buildMathTrace(s);
+}
+
+function log(type, msg) {
+  const el = document.getElementById('evtLog');
+  const t = new Date().toLocaleTimeString();
+  const line = document.createElement('div');
+  line.className = 'log-l';
+  line.innerHTML = '<span class="tm">[' + t + ']</span> <span class="' + (type==='system'?'ky':'sy') + '">' + esc(msg) + '</span>';
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+  const kids = el.querySelectorAll('.log-l');
+  if (kids.length > 200) kids[0].remove();
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function buildMathTrace(s) {
+  const ip = s.intent_probability || 0;
+  const ema = s.intent_ema || 0;
+  const hf = s.humanness_factor || 0;
+  const t0 = s.tier0_score || 0;
+  const hd = s.humanness_details || {};
+
+  const wE = s.welford_E;
+  const wR = s.welford_R;
+  const wJ = s.welford_jerk;
+  const fittsR = s.fitts_correlation;
+
+  const sigs = s.signals || [];
+  const lrd = s.lr_details || {};
+
+  const p0 = s.p0 != null ? s.p0 : 0.025;
+  const trThresh = s.trigger_threshold != null ? s.trigger_threshold : 0.4;
+  const emaHalfLife = s.ema_half_life_seconds != null ? s.ema_half_life_seconds : 7;
+  const priorOdds = p0 / (1 - p0);
+  let logOdds = Math.log(priorOdds);
+  const lrSteps = [];
+  for (const sig of sigs) {
+    const lr = lrd[sig];
+    if (lr) {
+      const step = 1.0 * Math.log(lr);
+      logOdds += step;
+      lrSteps.push({ signal: sig, LR: lr, logLR: Math.log(lr), weight: 1.0, contribution: step });
+    }
+  }
+  const pBuyingRaw = 1 / (1 + Math.exp(-logOdds));
+  const pBuyingFinal = pBuyingRaw * hf;
+
+  const eV = wE && wE.n > 1 ? wE.M2 / (wE.n - 1) : null;
+  const rV = wR && wR.n > 1 ? wR.M2 / (wR.n - 1) : null;
+  const jV = wJ && wJ.n > 1 ? wJ.M2 / (wJ.n - 1) : null;
+
+  const kE = 0.01, kR = 0.5, fittsScale = 0.15;
+  const sE = eV != null ? eV / (eV + kE) : 0.5;
+  const sR = rV != null ? rV / (rV + kR) : 0.5;
+  const sF = fittsR != null ? 1 / (1 + Math.exp(-fittsR / fittsScale)) : 0.5;
+
+  const alpha = 2 / (emaHalfLife/1 + 1);
+
+  const trace = {
+    '1. Intent Probability': {
+      'prior_odds': 'p0/(1-p0) = ' + p0 + '/' + (1-p0) + ' = ' + priorOdds.toFixed(4),
+      'log_prior_odds': 'ln(' + priorOdds.toFixed(4) + ') = ' + Math.log(priorOdds).toFixed(4),
+      'signal_lr_steps': lrSteps,
+      'total_log_odds': logOdds.toFixed(4),
+      'p_buying_raw': '1/(1+exp(-' + logOdds.toFixed(4) + ')) = ' + pBuyingRaw.toFixed(4),
+      'humanness_factor': hf.toFixed(4),
+      'p_buying_final': pBuyingRaw.toFixed(4) + ' \u00d7 ' + hf.toFixed(4) + ' = ' + pBuyingFinal.toFixed(4) + ' (' + (pBuyingFinal*100).toFixed(1) + '%)',
+    },
+    '2. Humanness Factor': {
+      'tier0_score': t0.toFixed(2),
+      'E_variance': eV != null ? eV.toFixed(6) : 'null (< 5 curves)',
+      'E_score': 'v/(v+k) = ' + (eV != null ? eV.toFixed(6) : 'null') + '/' + ((eV != null ? eV.toFixed(6) : '\u2014') + kE) + ' = ' + sE.toFixed(4),
+      'R_variance': rV != null ? rV.toFixed(6) : 'null (< 5 curves)',
+      'R_score': 'v/(v+k) = ' + (rV != null ? rV.toFixed(6) : 'null') + '/' + ((rV != null ? rV.toFixed(6) : '\u2014') + kR) + ' = ' + sR.toFixed(4),
+      'fitts_correlation': fittsR != null ? fittsR.toFixed(4) : 'null (< 4 pairs)',
+      'fitts_score': '1/(1+exp(-r/s)) = 1/(1+exp(-' + (fittsR != null ? fittsR.toFixed(4) : 'null') + '/' + fittsScale + ')) = ' + sF.toFixed(4),
+      'weighted_average': '(' + t0.toFixed(2) + '\u00d71 + ' + sE.toFixed(4) + '\u00d71 + ' + sR.toFixed(4) + '\u00d71 + ' + sF.toFixed(4) + '\u00d71) / 4 = ' + hf.toFixed(4),
+    },
+    '3. Welford Accumulators': {
+      'E_mean': wE ? wE.mean.toFixed(4) : 'null',
+      'E_n': wE ? wE.n : 0,
+      'E_variance_sample': eV != null ? eV.toFixed(6) : 'null (need n>=2)',
+      'R_mean': wR ? wR.mean.toFixed(4) : 'null',
+      'R_n': wR ? wR.n : 0,
+      'R_variance_sample': rV != null ? rV.toFixed(6) : 'null (need n>=2)',
+      'jerk_mean': wJ ? wJ.mean.toFixed(4) : 'null',
+      'jerk_n': wJ ? wJ.n : 0,
+      'jerk_variance_sample': jV != null ? jV.toFixed(6) : 'null (need n>=2)',
+    },
+    '4. Hysteresis (EMA)': {
+      'alpha': '2/(' + emaHalfLife + '/1+1) = ' + alpha.toFixed(4),
+      'prev_ema': s.hysteresis_ema_value != null ? s.hysteresis_ema_value.toFixed(6) : '0 (first tick)',
+      'new_ema': alpha.toFixed(4) + '\u00d7' + ip.toFixed(4) + ' + (1-' + alpha.toFixed(4) + ')\u00d7prev = ' + ema.toFixed(6),
+      'threshold': trThresh.toFixed(2),
+      'above_threshold': ema >= trThresh ? 'YES' : 'NO',
+      'trigger': s.trigger ? 'FIRED' : 'waiting',
+    },
+    '5. Curve Features (latest curve)': {
+      'buffer_points': s.curve_buffer_len ?? 0,
+      'fitts_pairs': s.fitts_pairs_len ?? 0,
+    },
+  };
+
+  document.getElementById('mathTrace').textContent = JSON.stringify(trace, null, 2);
+}
+
+connect();
+</script>
+</body>
+</html>

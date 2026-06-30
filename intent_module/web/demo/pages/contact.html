@@ -1,0 +1,46 @@
+<section class="contact-section">
+  <div class="section-label">Contact</div>
+  <h2>Let's <span class="gradient-text">talk</span></h2>
+  <p class="section-sub">Have questions? Want a custom demo? We're here to help.</p>
+
+  <div class="contact-grid">
+    <form class="contact-form" onsubmit="event.preventDefault();alert('Thanks! We\'ll get back to you within 24 hours.');this.reset()">
+      <div class="form-group">
+        <label for="cf-name">Full Name</label>
+        <input type="text" id="cf-name" name="name" placeholder="John Doe" required>
+      </div>
+      <div class="form-group">
+        <label for="cf-email">Email</label>
+        <input type="email" id="cf-email" name="email" placeholder="john@company.com" required>
+      </div>
+      <div class="form-group">
+        <label for="cf-company">Company</label>
+        <input type="text" id="cf-company" name="company" placeholder="Acme Inc.">
+      </div>
+      <div class="form-group">
+        <label for="cf-message">Message</label>
+        <textarea id="cf-message" name="message" rows="5" placeholder="Tell us about your needs..." required></textarea>
+      </div>
+      <button type="submit" class="btn-primary">Send Message</button>
+    </form>
+
+    <div class="contact-info">
+      <div class="ci-card">
+        <h3>Email</h3>
+        <p>hello@insightpro.io</p>
+      </div>
+      <div class="ci-card">
+        <h3>Phone</h3>
+        <p>+1 (555) 123-4567</p>
+      </div>
+      <div class="ci-card">
+        <h3>Office</h3>
+        <p>123 Innovation Drive<br>San Francisco, CA 94105</p>
+      </div>
+      <div class="ci-card">
+        <h3>Hours</h3>
+        <p>Mon–Fri, 9 AM – 6 PM PST</p>
+      </div>
+    </div>
+  </div>
+</section>
