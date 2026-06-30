@@ -1,6 +1,0 @@
-<script
-  defer
-  data-website-id="dfid_TbZNWsCf3jENAq3WFmo7U"
-  data-domain="gtrbd.com"
-  src="https://datafa.st/js/script.js">
-</script>

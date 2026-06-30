@@ -1,0 +1,6 @@
+<script src="https://your-server.com/tag.js"
+  data-website-id="YOUR_SITE_ID"
+  data-server-host="your-server.com"
+  data-plan="pro"
+  data-pricing-selector=".pricing-card"
+  data-debug></script>
